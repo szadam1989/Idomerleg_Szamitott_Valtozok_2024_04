@@ -36,7 +36,7 @@ for(i in 1:nrow(NEV_1)){
   for(j in 1:62){
     
     if (is.na(str_sub(NEV_1[i, paste0("FIBC111_", j)])) == TRUE)
-        break
+        next
     
     if ((str_sub(NEV_1[i, paste0("FIBC111_", j)], start = 1, end = 2) == "00" | str_sub(NEV_1[i, paste0("FIBC111_", j)], start = 1, end = 2) == "01" | str_sub(NEV_1[i, paste0("FIBC111_", j)], start = 1, end = 2) == "02" | str_sub(NEV_1[i, paste0("FIBC111_", j)], start = 1, end = 2) == "03") & ((str_sub(NEV_1[i, paste0("FIBC126_", j)], start = 1, end = 2) != "00" & str_sub(NEV_1[i, paste0("FIBC126_", j)], start = 1, end = 2) != "01" & str_sub(NEV_1[i, paste0("FIBC126_", j)], start = 1, end = 2) != "02" & str_sub(NEV_1[i, paste0("FIBC126_", j)], start = 1, end = 2) != "03")))
       tartam[i, paste0("TARTAM_", j)] <- as.numeric(difftime(ymd_hms(paste0(date_submit + days(1), " ", NEV_1[i, paste0("FIBC111_", j)], ":00")), ymd_hms(paste0(date_submit, " ", NEV_1[i, paste0("FIBC126_", j)], ":00")), units = "mins"))
@@ -62,7 +62,7 @@ colnames(tevlista_kodok_A) <- c(paste0("Mut_A_", c(tevlista$Kód)))
 tevlista_kodok_B <- as.data.frame(matrix(0, nrow = nrow(tartam), ncol = nrow(tevlista)))
 colnames(tevlista_kodok_B) <- c(paste0("Mut_B_", c(tevlista$Kód)))
 
-tevlista_kodok_C <- as.data.frame(matrix(0, nrow = nrow(tartam), ncol = nrow(tevlista)))
+tevlista_kodok_C <- as.data.frame(matrix("", nrow = nrow(tartam), ncol = nrow(tevlista)))
 colnames(tevlista_kodok_C) <- c(paste0("Mut_C_", c(tevlista$Kód)))
 
 tevlista_kodok <- cbind(tevlista_kodok_A, tevlista_kodok_B, tevlista_kodok_C)
@@ -85,7 +85,7 @@ for(i in 1:nrow(tartam)){
     if (nrow(contains) == 0)
       next
     
-    oszto <- sum(contains, na.rm = TRUE)
+    # oszto <- sum(contains, na.rm = TRUE)
     
     for(k in 1:ncol(contains)){
       
@@ -97,17 +97,17 @@ for(i in 1:nrow(tartam)){
       
       tartam[i, paste0("Mut_A_", tevlista[j, "Kód"])] %+=% tartam[i, c(paste0("TARTAM_", k))]
       tartam[i, paste0("Mut_B_", tevlista[j, "Kód"])] <- 100
-      tartam[i, paste0("Mut_C_", tevlista[j, "Kód"])] %+=% tartam[i, c(paste0("TARTAM_", k))]
+      tartam[i, paste0("Mut_C_", tevlista[j, "Kód"])] <- tartam[i, paste0("Mut_A_", tevlista[j, "Kód"])]
       
     }
     
-    if (oszto != 0)
-      tartam[i, paste0("Mut_A_", tevlista[j, "Kód"])] <- tartam[i, paste0("Mut_A_", tevlista[j, "Kód"])] / oszto
+    # if (oszto != 0)
+    #   tartam[i, paste0("Mut_A_", tevlista[j, "Kód"])] <- tartam[i, paste0("Mut_A_", tevlista[j, "Kód"])] / oszto
 
   }
   
 }
 
-write.xlsx(tartam, "Számított_változók_képzése_20250616.xlsx", overwrite = TRUE)
+tartam[, paste0("Mut_C_", c(tevlista$Kód))] <- lapply(tartam[, paste0("Mut_C_", c(tevlista$Kód))], as.numeric)
 
-
+write.xlsx(tartam, "Számított_változók_képzése_1nev_20250618.xlsx", overwrite = TRUE)
